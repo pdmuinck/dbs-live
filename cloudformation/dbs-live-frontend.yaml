@@ -1,0 +1,14 @@
+Resources:
+  DbsLiveS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: dbs-live
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
+      WebsiteConfiguration:
+        IndexDocument: index.html
+
+

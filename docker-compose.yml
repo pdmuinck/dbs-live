@@ -1,0 +1,60 @@
+version: "3.8"
+services:
+
+  db:
+    image: mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=mypass
+    ports:
+      - 3306:3306
+    volumes:
+      - "./scripts/schema.sql:/docker-entrypoint-initdb.d/1.sql"
+
+  dbt-server:
+    platform: linux/x86_64
+    build: ./dbt-server
+    ports:
+      - 3002:80
+    volumes:
+      - ./mnt:/mnt
+    depends_on:
+      - db
+
+  file-server:
+    platform: linux/x86_64
+    build: ./file-server
+    ports:
+      - 3001:80
+    volumes:
+      - ./mnt:/mnt
+
+  git-server:
+    platform: linux/x86_64
+    build: ./git-server
+    ports:
+      - 3003:80
+    volumes:
+      - ./mnt:/mnt
+    environment:
+      PRIVATE_SSH_KEY: /run/secrets/user_ssh_key
+    secrets:
+      - user_ssh_key
+
+  node:
+    build: ./client
+    ports:
+      - 3000:3000
+    depends_on:
+      - git-server
+      - dbt-server
+      - file-server
+      - db
+
+secrets:
+  user_ssh_key:
+    file: ~/.ssh/id_rsa
+
+
+
+volumes:
+  mnt:

@@ -1,0 +1,713 @@
+Resources:
+  VPCResource:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      InstanceTenancy: default
+      Tags:
+        - Key: Name
+          Value: PrivateIntegrationsStack/PrivateIntegrationsTutorialVPC
+  PublicSubnet1Resource:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      CidrBlock: 10.0.0.0/18
+      VpcId: !Ref VPCResource
+      AvailabilityZone: !Select 
+        - 0
+        - !GetAZs ''
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: 'aws-cdk:subnet-name'
+          Value: Public
+        - Key: 'aws-cdk:subnet-type'
+          Value: Public
+        - Key: Name
+          Value: >-
+            PrivateIntegrationsStack/PrivateIntegrationsTutorialVPC/PublicSubnet1
+  PublicSubnet1RouteTableResource:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId: !Ref VPCResource
+      Tags:
+        - Key: Name
+          Value: >-
+            PrivateIntegrationsStack/PrivateIntegrationsTutorialVPC/PublicSubnet1
+  PublicSubnet1RouteTableAssociationResource:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      RouteTableId: !Ref PublicSubnet1RouteTableResource
+      SubnetId: !Ref PublicSubnet1Resource
+  PublicSubnet1DefaultRouteResource:
+    Type: 'AWS::EC2::Route'
+    Properties:
+      RouteTableId: !Ref PublicSubnet1RouteTableResource
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGatewayResource
+    DependsOn:
+      - VpcGatewayAttachmentResource
+  PublicSubnet1EIPResource:
+    Type: 'AWS::EC2::EIP'
+    Properties:
+      Domain: vpc
+      Tags:
+        - Key: Name
+          Value: >-
+            PrivateIntegrationsStack/PrivateIntegrationsTutorialVPC/PublicSubnet1
+  PublicSubnet1NATGatewayResource:
+    Type: 'AWS::EC2::NatGateway'
+    Properties:
+      AllocationId: !GetAtt 
+        - PublicSubnet1EIPResource
+        - AllocationId
+      SubnetId: !Ref PublicSubnet1Resource
+      Tags:
+        - Key: Name
+          Value: >-
+            PrivateIntegrationsStack/PrivateIntegrationsTutorialVPC/PublicSubnet1
+  PublicSubnet2Resource:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      CidrBlock: 10.0.64.0/18
+      VpcId: !Ref VPCResource
+      AvailabilityZone: !Select 
+        - 1
+        - !GetAZs ''
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: 'aws-cdk:subnet-name'
+          Value: Public
+        - Key: 'aws-cdk:subnet-type'
+          Value: Public
+        - Key: Name
+          Value: >-
+            PrivateIntegrationsStack/PrivateIntegrationsTutorialVPC/PublicSubnet2
+  PublicSubnet2RouteTableResource:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId: !Ref VPCResource
+      Tags:
+        - Key: Name
+          Value: >-
+            PrivateIntegrationsStack/PrivateIntegrationsTutorialVPC/PublicSubnet2
+  PublicSubnet2RouteTableAssociationResource:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      RouteTableId: !Ref PublicSubnet2RouteTableResource
+      SubnetId: !Ref PublicSubnet2Resource
+  PublicSubnet2DefaultRoutenResource:
+    Type: 'AWS::EC2::Route'
+    Properties:
+      RouteTableId: !Ref PublicSubnet2RouteTableResource
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGatewayResource
+    DependsOn:
+      - VpcGatewayAttachmentResource
+  PublicSubnet2EIPResource:
+    Type: 'AWS::EC2::EIP'
+    Properties:
+      Domain: vpc
+      Tags:
+        - Key: Name
+          Value: >-
+            PrivateIntegrationsStack/PrivateIntegrationsTutorialVPC/PublicSubnet2
+  PublicSubnet2NATGatewayResource:
+    Type: 'AWS::EC2::NatGateway'
+    Properties:
+      AllocationId: !GetAtt 
+        - PublicSubnet2EIPResource
+        - AllocationId
+      SubnetId: !Ref PublicSubnet2Resource
+      Tags:
+        - Key: Name
+          Value: >-
+            PrivateIntegrationsStack/PrivateIntegrationsTutorialVPC/PublicSubnet2
+  PrivateSubnet1Resource:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      CidrBlock: 10.0.128.0/18
+      VpcId: !Ref VPCResource
+      AvailabilityZone: !Select 
+        - 0
+        - !GetAZs ''
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: 'aws-cdk:subnet-name'
+          Value: Private
+        - Key: 'aws-cdk:subnet-type'
+          Value: Private
+        - Key: Name
+          Value: >-
+            PrivateIntegrationsStack/PrivateIntegrationsTutorialVPC/PrivateSubnet1
+  PrivateSubnet1RouteTableResource:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId: !Ref VPCResource
+      Tags:
+        - Key: Name
+          Value: >-
+            PrivateIntegrationsStack/PrivateIntegrationsTutorialVPC/PrivateSubnet1
+  PrivateSubnet1RouteTableAssociationResource:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      RouteTableId: !Ref PrivateSubnet1RouteTableResource
+      SubnetId: !Ref PrivateSubnet1Resource
+  PrivateSubnet1DefaultRouteResource:
+    Type: 'AWS::EC2::Route'
+    Properties:
+      RouteTableId: !Ref PrivateSubnet1RouteTableResource
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref PublicSubnet1NATGatewayResource
+  PrivateSubnet2Resource:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      CidrBlock: 10.0.192.0/18
+      VpcId: !Ref VPCResource
+      AvailabilityZone: !Select 
+        - 1
+        - !GetAZs ''
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: 'aws-cdk:subnet-name'
+          Value: Private
+        - Key: 'aws-cdk:subnet-type'
+          Value: Private
+        - Key: Name
+          Value: >-
+            PrivateIntegrationsStack/PrivateIntegrationsTutorialVPC/PrivateSubnet2
+  PrivateSubnet2RouteTableResource:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId: !Ref VPCResource
+      Tags:
+        - Key: Name
+          Value: >-
+            PrivateIntegrationsStack/PrivateIntegrationsTutorialVPC/PrivateSubnet2
+  PrivateSubnet2RouteTableAssociationResource:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      RouteTableId: !Ref PrivateSubnet2RouteTableResource
+      SubnetId: !Ref PrivateSubnet2Resource
+  PrivateSubnet2DefaultRouteResource:
+    Type: 'AWS::EC2::Route'
+    Properties:
+      RouteTableId: !Ref PrivateSubnet2RouteTableResource
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref PublicSubnet2NATGatewayResource
+  InternetGatewayResource:
+    Type: 'AWS::EC2::InternetGateway'
+    Properties:
+      Tags:
+        - Key: Name
+          Value: PrivateIntegrationsStack/PrivateIntegrationsTutorialVPC
+  VpcGatewayAttachmentResource:
+    Type: 'AWS::EC2::VPCGatewayAttachment'
+    Properties:
+      VpcId: !Ref VPCResource
+      InternetGatewayId: !Ref InternetGatewayResource
+  EfsFileSystem:
+    Type: AWS::EFS::FileSystem
+    Properties:
+      Encrypted: True
+      FileSystemTags:
+        - Key: Name
+          Value: dbs-live
+  EfsAccessPoint:
+    Type: AWS::EFS::AccessPoint
+    Properties:
+      FileSystemId: !Ref EfsFileSystem
+      PosixUser:
+        Gid: 101
+        Uid: 101
+      RootDirectory:
+        CreationInfo:
+          OwnerGid: "101"
+          OwnerUid: "101"
+          Permissions: "0755"
+        Path: "/mnt"
+
+  MountTargetResourc1:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref EfsFileSystem
+      SubnetId: !Ref PublicSubnet1Resource
+      SecurityGroups:
+        - !GetAtt
+          - EFSSecurityGroup
+          - GroupId
+    DependsOn:
+      - EfsFileSystem
+      - EFSSecurityGroup
+  MountTargetResourc2:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref EfsFileSystem
+      SubnetId: !Ref PublicSubnet2Resource
+      SecurityGroups:
+        - !GetAtt
+          - EFSSecurityGroup
+          - GroupId
+    DependsOn:
+      - EfsFileSystem
+      - EFSSecurityGroup
+
+  EFSSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: EFS security group
+      GroupName: efs-sg
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 2049
+          ToPort: 2049
+          SourceSecurityGroupId: !Ref ECSServiceSecurityGroup
+      VpcId: !Ref VPCResource
+
+  EcsClusterResource:
+    Type: 'AWS::ECS::Cluster'
+  LoadBalancerResource:
+    Type: 'AWS::ElasticLoadBalancingV2::LoadBalancer'
+    Properties:
+      LoadBalancerAttributes:
+        - Key: deletion_protection.enabled
+          Value: 'false'
+      Scheme: internal
+      SecurityGroups:
+        - !GetAtt 
+          - LBSecurityGroup
+          - GroupId
+      Subnets:
+        - !Ref PrivateSubnet1Resource
+        - !Ref PrivateSubnet2Resource
+      Type: application
+  LBSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: >-
+        Automatically created Security Group for ELB
+        PrivateIntegrationsStackPrivateIntegrationsTutorialServiceLBCB8E0368
+      SecurityGroupIngress:
+        - CidrIp: 0.0.0.0/0
+          Description: Allow from anyone on port 80
+          FromPort: 80
+          IpProtocol: tcp
+          ToPort: 80
+      VpcId: !Ref VPCResource
+  PrivateIntegrationsTutorialServiceLBSecurityGrouptoPrivateIntegrationsStackPrivateIntegrationsTutorialServiceSecurityGroupD7C89143805EA68A3C:
+    Type: 'AWS::EC2::SecurityGroupEgress'
+    Properties:
+      GroupId: !GetAtt 
+        - LBSecurityGroup
+        - GroupId
+      IpProtocol: tcp
+      Description: Load balancer to target
+      DestinationSecurityGroupId: !GetAtt 
+        - ECSServiceSecurityGroup
+        - GroupId
+      FromPort: 80
+      ToPort: 80
+  LoadBalancerListenerResource:
+    Type: 'AWS::ElasticLoadBalancingV2::Listener'
+    Properties:
+      DefaultActions:
+        - TargetGroupArn: !Ref FileServerTargetGroupResource
+          Type: forward
+      LoadBalancerArn: !Ref LoadBalancerResource
+      Port: 80
+      Protocol: HTTP
+  GitServiceListenerRule:
+    Type: 'AWS::ElasticLoadBalancingV2::ListenerRule'
+    Properties:
+      Actions:
+        - Type: forward
+          TargetGroupArn: !Ref GitServerTargetGroupResource
+      Conditions:
+        - Field: path-pattern
+          PathPatternConfig:
+            Values:
+              - /git/*
+      ListenerArn: !Ref LoadBalancerListenerResource
+      Priority: 1
+  DbtServiceListenerRule:
+    Type: 'AWS::ElasticLoadBalancingV2::ListenerRule'
+    Properties:
+      Actions:
+        - Type: forward
+          TargetGroupArn: !Ref DbtServerTargetGroupResource
+      Conditions:
+        - Field: path-pattern
+          PathPatternConfig:
+            Values:
+              - /dbt/*
+      ListenerArn: !Ref LoadBalancerListenerResource
+      Priority: 2
+  DbtServerTargetGroupResource:
+    Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
+    Properties:
+      Port: 80
+      Protocol: HTTP
+      TargetType: ip
+      VpcId: !Ref VPCResource
+  GitServerTargetGroupResource:
+    Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
+    Properties:
+      Port: 80
+      Protocol: HTTP
+      TargetType: ip
+      VpcId: !Ref VPCResource
+  FileServerTargetGroupResource:
+    Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
+    Properties:
+      Port: 80
+      Protocol: HTTP
+      TargetType: ip
+      VpcId: !Ref VPCResource
+  TaskDefRoleResource:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+        Version: 2012-10-17
+  EfsAccessPolicy:
+    Type: "AWS::IAM::Policy"
+    Properties:
+      PolicyName: "TaskDefRoleAccessEfs"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Action:
+              - "elasticfilesystem:ClientMount"
+              - "elasticfilesystem:ClientWrite"
+              - "elasticfilesystem:ClientRootAccess"
+            Resource: "*"
+      Roles:
+        - !Ref TaskDefRoleResource
+  DbtServerTaskDefResource:
+    Type: 'AWS::ECS::TaskDefinition'
+    Properties:
+      ContainerDefinitions:
+        - Essential: true
+          Image: 232619344298.dkr.ecr.eu-west-1.amazonaws.com/dbt-server:latest
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref PrivateIntegrationsTutorialServiceTaskDefwebLogGroupBA8BE497
+              awslogs-stream-prefix: PrivateIntegrationsTutorialService
+              awslogs-region: !Ref 'AWS::Region'
+          Name: dbt-server
+          PortMappings:
+            - ContainerPort: 80
+              Protocol: tcp
+          MountPoints:
+            - ContainerPath: /mnt
+              SourceVolume: efs-server-AP
+
+      Cpu: '512'
+      ExecutionRoleArn: !GetAtt 
+        - TaskDefExecutionRole
+        - Arn
+      Family: dbt-server
+      Memory: '2048'
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      TaskRoleArn: !GetAtt 
+        - TaskDefRoleResource
+        - Arn
+      Volumes:
+        - Name: efs-server-AP
+          EFSVolumeConfiguration:
+            AuthorizationConfig:
+              AccessPointId: !Ref EfsAccessPoint
+              IAM: ENABLED
+            FilesystemId: !Ref EfsFileSystem
+            TransitEncryption: ENABLED
+
+  PrivateIntegrationsTutorialServiceTaskDefwebLogGroupBA8BE497:
+    Type: 'AWS::Logs::LogGroup'
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+  TaskDefExecutionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+        Version: 2012-10-17
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+  RolePolicies:
+    Type: "AWS::IAM::Policy"
+    Properties:
+      PolicyName: "TaskDefExecutionGetSecret"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Action: "secretsmanager:GetSecretValue"
+            Resource: "*"
+      Roles:
+        - !Ref TaskDefExecutionRole
+  DbtServerEcsServiceResource:
+    Type: 'AWS::ECS::Service'
+    Properties:
+      Cluster: !Ref EcsClusterResource
+      DeploymentConfiguration:
+        MaximumPercent: 200
+        MinimumHealthyPercent: 50
+      DesiredCount: 2
+      EnableECSManagedTags: false
+      HealthCheckGracePeriodSeconds: 60
+      LaunchType: FARGATE
+      LoadBalancers:
+        - ContainerName: dbt-server
+          ContainerPort: 80
+          TargetGroupArn: !Ref DbtServerTargetGroupResource
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: DISABLED
+          SecurityGroups:
+            - !GetAtt 
+              - ECSServiceSecurityGroup
+              - GroupId
+          Subnets:
+            - !Ref PrivateSubnet1Resource
+            - !Ref PrivateSubnet2Resource
+      TaskDefinition: !Ref DbtServerTaskDefResource
+    DependsOn:
+      - DbtServerTargetGroupResource
+      - LoadBalancerListenerResource
+      - DbtServiceListenerRule
+  GitServerEcsServiceResource:
+    Type: 'AWS::ECS::Service'
+    Properties:
+      Cluster: !Ref EcsClusterResource
+      DeploymentConfiguration:
+        MaximumPercent: 200
+        MinimumHealthyPercent: 50
+      DesiredCount: 2
+      EnableECSManagedTags: false
+      HealthCheckGracePeriodSeconds: 60
+      LaunchType: FARGATE
+      LoadBalancers:
+        - ContainerName: git-server
+          ContainerPort: 80
+          TargetGroupArn: !Ref GitServerTargetGroupResource
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: DISABLED
+          SecurityGroups:
+            - !GetAtt
+              - ECSServiceSecurityGroup
+              - GroupId
+          Subnets:
+            - !Ref PrivateSubnet1Resource
+            - !Ref PrivateSubnet2Resource
+      TaskDefinition: !Ref GitServerTaskDefResource
+    DependsOn:
+      - GitServerTargetGroupResource
+      - LoadBalancerListenerResource
+      - GitServiceListenerRule
+  GitServerTaskDefResource:
+    Type: 'AWS::ECS::TaskDefinition'
+    Properties:
+      ContainerDefinitions:
+        - Essential: true
+          Image: 232619344298.dkr.ecr.eu-west-1.amazonaws.com/git-server:latest
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref PrivateIntegrationsTutorialServiceTaskDefwebLogGroupBA8BE497
+              awslogs-stream-prefix: PrivateIntegrationsTutorialService
+              awslogs-region: !Ref 'AWS::Region'
+          Name: git-server
+          PortMappings:
+            - ContainerPort: 80
+              Protocol: tcp
+          MountPoints:
+            - ContainerPath: /mnt
+              SourceVolume: efs-server-AP
+          Environment:
+            - Name: PROJECT_URI
+              Value: https://github.com/pdmuinck/dbt-example-project.git
+      Cpu: '512'
+      ExecutionRoleArn: !GetAtt
+        - TaskDefExecutionRole
+        - Arn
+      Family: git-server
+      Memory: '2048'
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      TaskRoleArn: !GetAtt
+        - TaskDefRoleResource
+        - Arn
+      Volumes:
+        - Name: efs-server-AP
+          EFSVolumeConfiguration:
+            AuthorizationConfig:
+              AccessPointId: !Ref EfsAccessPoint
+              IAM: ENABLED
+            FilesystemId: !Ref EfsFileSystem
+            TransitEncryption: ENABLED
+  FileServerEcsServiceResource:
+    Type: 'AWS::ECS::Service'
+    Properties:
+      Cluster: !Ref EcsClusterResource
+      DeploymentConfiguration:
+        MaximumPercent: 200
+        MinimumHealthyPercent: 50
+      DesiredCount: 2
+      EnableECSManagedTags: false
+      HealthCheckGracePeriodSeconds: 60
+      LaunchType: FARGATE
+      LoadBalancers:
+        - ContainerName: file-server
+          ContainerPort: 80
+          TargetGroupArn: !Ref FileServerTargetGroupResource
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: DISABLED
+          SecurityGroups:
+            - !GetAtt
+              - ECSServiceSecurityGroup
+              - GroupId
+          Subnets:
+            - !Ref PrivateSubnet1Resource
+            - !Ref PrivateSubnet2Resource
+      TaskDefinition: !Ref FileServerTaskDefResource
+    DependsOn:
+      - FileServerTargetGroupResource
+      - LoadBalancerListenerResource
+  FileServerTaskDefResource:
+    Type: 'AWS::ECS::TaskDefinition'
+    Properties:
+      ContainerDefinitions:
+        - Essential: true
+          Image: 232619344298.dkr.ecr.eu-west-1.amazonaws.com/file-server:latest
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref PrivateIntegrationsTutorialServiceTaskDefwebLogGroupBA8BE497
+              awslogs-stream-prefix: PrivateIntegrationsTutorialService
+              awslogs-region: !Ref 'AWS::Region'
+          Name: file-server
+          PortMappings:
+            - ContainerPort: 80
+              Protocol: tcp
+          MountPoints:
+            - ContainerPath: /mnt
+              SourceVolume: efs-server-AP
+      Cpu: '512'
+      ExecutionRoleArn: !GetAtt
+        - TaskDefExecutionRole
+        - Arn
+      Family: file-server
+      Memory: '2048'
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      TaskRoleArn: !GetAtt
+        - TaskDefRoleResource
+        - Arn
+      Volumes:
+        - Name: efs-server-AP
+          EFSVolumeConfiguration:
+            AuthorizationConfig:
+              AccessPointId: !Ref EfsAccessPoint
+              IAM: ENABLED
+            FilesystemId: !Ref EfsFileSystem
+            TransitEncryption: ENABLED
+  ECSServiceSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: >-
+        PrivateIntegrationsStack/PrivateIntegrationsTutorialService/Service/SecurityGroup
+      SecurityGroupEgress:
+        - CidrIp: 0.0.0.0/0
+          Description: Allow all outbound traffic by default
+          IpProtocol: '-1'
+      VpcId: !Ref VPCResource
+  PrivateIntegrationsTutorialServiceSecurityGroupfromPrivateIntegrationsStackPrivateIntegrationsTutorialServiceLBSecurityGroup37A9AEF980935D99E0:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      IpProtocol: tcp
+      Description: Load balancer to target
+      FromPort: 80
+      GroupId: !GetAtt 
+        - ECSServiceSecurityGroup
+        - GroupId
+      SourceSecurityGroupId: !GetAtt 
+        - LBSecurityGroup
+        - GroupId
+      ToPort: 80
+  ApiResource:
+    Type: 'AWS::ApiGatewayV2::Api'
+    Properties:
+      Name: dbs-live
+      ProtocolType: HTTP
+  IntegrationResource:
+    Type: 'AWS::ApiGatewayV2::Integration'
+    Properties:
+      ApiId: !Ref ApiResource
+      IntegrationType: HTTP_PROXY
+      ConnectionId: !Ref VpcLinkResource
+      ConnectionType: VPC_LINK
+      IntegrationMethod: ANY
+      IntegrationUri: !Ref LoadBalancerListenerResource
+      PayloadFormatVersion: '1.0'
+  ApiAnyRouteResource:
+    Type: 'AWS::ApiGatewayV2::Route'
+    Properties:
+      ApiId: !Ref ApiResource
+      RouteKey: 'ANY /{proxy+}'
+      Target: !Join 
+        - ''
+        - - integrations/
+          - !Ref >-
+            IntegrationResource
+  VpcLinkResource:
+    Type: 'AWS::ApiGatewayV2::VpcLink'
+    Properties:
+      Name: vpclinkDbsLiveApi
+      SubnetIds:
+        - !Ref PrivateSubnet1Resource
+        - !Ref PrivateSubnet2Resource
+      SecurityGroupIds: []
+  myLogGroup22BB06CA:
+    Type: 'AWS::Logs::LogGroup'
+    Properties:
+      RetentionInDays: 731
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+  StageWithLogging:
+    Type: 'AWS::ApiGatewayV2::Stage'
+    Properties:
+      ApiId: !Ref ApiResource
+      StageName: $default
+      AccessLogSettings:
+        DestinationArn: !GetAtt 
+          - myLogGroup22BB06CA
+          - Arn
+        Format: >-
+          $context.identity.sourceIp - - [$context.requestTime]
+          "$context.httpMethod $context.routeKey $context.protocol"
+          $context.status $context.responseLength $context.requestId
+      AutoDeploy: true
+
+
+Outputs:
+  APIinvokeURL:
+    Description: Your API's invoke URL
+    Value: !GetAtt 
+      - ApiResource
+      - ApiEndpoint
